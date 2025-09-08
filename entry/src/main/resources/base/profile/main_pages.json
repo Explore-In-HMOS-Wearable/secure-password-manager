@@ -1,0 +1,8 @@
+{
+  "src": [
+    "pages/QueryResultPage",
+    "pages/Index",
+    "pages/AddPage",
+    "pages/ListPage"
+  ]
+}
