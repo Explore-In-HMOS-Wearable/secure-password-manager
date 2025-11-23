@@ -3,8 +3,7 @@ import { promptAction } from '@kit.ArkUI';
 import { util } from '@kit.ArkTS';
 import { logger } from '../common/Logger';
 import AbilityDelegatorRegistry from '@ohos.app.ability.abilityDelegatorRegistry';
-
-let abilityDelegator = AbilityDelegatorRegistry.getAbilityDelegator();
+import GlobalContext from '../utils/GlobalContex';
 
 function removeDuplicateAndSort(arr: string[]): string[] {
   let newArr = new Array<string>();
@@ -18,7 +17,7 @@ function removeDuplicateAndSort(arr: string[]): string[] {
 
 export function log(resource: Resource) {
   promptAction.showToast({ message: resource })
-  logger.info(getContext().resourceManager.getStringSync(resource));
+  logger.info(GlobalContext.getInstance().getCustomContext()!.resourceManager.getStringSync(resource));
 }
 
 export function stringToArray(str: string): Uint8Array {
@@ -47,7 +46,6 @@ export async function addAssetPromise(account: string, password: string, label: 
     log($r('app.string.save_failed_for_label'))
     return;
   }
-  console.log(account, password)
   let attr: asset.AssetMap = new Map();
   attr.set(asset.Tag.ALIAS, stringToArray(account))
   attr.set(asset.Tag.SECRET, stringToArray(password))

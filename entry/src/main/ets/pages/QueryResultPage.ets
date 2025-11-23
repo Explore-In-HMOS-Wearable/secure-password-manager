@@ -1,4 +1,4 @@
-import { ArcList, ArcListItem, router } from '@kit.ArkUI';
+import { ArcList, ArcListItem } from '@kit.ArkUI';
 import { logger } from '../common/Logger';
 import { AssetItem } from '../model/AssetItem';
 import {
@@ -9,18 +9,32 @@ import {
 } from '../model/AssetModel';
 import { convertMapArrayToMapItem, getAuthTokenCallback } from '../utils/Helper';
 
+
+@Builder
+export function QueryResultPageBuilder (){
+  QueryResultPage()
+}
+
 @Entry
 @Component
 struct QueryResultPage {
-  @State param: Record<string, AssetItem> = router.getParams() as Record<string, AssetItem>;
-  @State data: AssetItem = this.param.data as AssetItem;
+  @State data: AssetItem = {
+    alias: '',
+    secret: '',
+    dataLabel: ''
+  };
+
   private challenge: Uint8Array = new Uint8Array;
   private authToken: Uint8Array = new Uint8Array;
+
   @State result: AssetItem = {
     alias: '',
     secret: '',
     dataLabel: ''
   }
+
+  pageInfos: NavPathStack = new NavPathStack();
+
 
   aboutToAppear(): void {
     this.init()
@@ -29,7 +43,6 @@ struct QueryResultPage {
   async init() {
     if (this.data.alias.length > 0) {
       let challenge = await preQueryAssetPromise(this.data.alias);
-      console.log(JSON.stringify(challenge))
       if (challenge.length === 0) {
         log($r('app.string.query_failed'))
         return
@@ -51,6 +64,8 @@ struct QueryResultPage {
   }
 
   build() {
+
+    NavDestination(){
     Column() {
 
       Column() {
@@ -58,6 +73,7 @@ struct QueryResultPage {
           ArcListItem() {
             Text($r('app.string.account_info')).fontColor(Color.White).fontSize(18).fontWeight(FontWeight.Bold)
           }
+
           ArcListItem() {
             Column() {
               Row() {
@@ -170,6 +186,28 @@ struct QueryResultPage {
       }
     }
     .width('100%').height('100%').backgroundColor($r('app.color.app_background'))
+  }
+    .width('100%')
+    .height('100%')
+    .hideTitleBar(true)
+    .onReady((context: NavDestinationContext) => {
+
+
+
+      this.pageInfos = context.pathStack;
+
+      try {
+
+        this.data = (context.pathInfo.param as AssetItem);
+        logger.info(`asset item data -> ${JSON.stringify(this.data)}`)
+
+      } catch (e) {
+        logger.error(`testTag onReady catch exception: ${JSON.stringify(e)}`);
+      }
+
+    })
+
+
   }
 
   pageTransition() {

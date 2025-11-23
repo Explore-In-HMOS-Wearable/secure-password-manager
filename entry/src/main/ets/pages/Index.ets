@@ -1,8 +1,15 @@
 import { ArcList, ArcListItem, ArcListItemAttribute } from '@kit.ArkUI';
 
+
+@Builder
+export function PageBuilder (){
+  Page()
+}
+
 @Entry
 @Component
 struct Page {
+  pageInfos: NavPathStack = new NavPathStack();
 
   @Builder
   ListBuilder(image: Resource, title: string, url: string) {
@@ -16,16 +23,18 @@ struct Page {
       .padding(8)
       .width('100%')
       .onClick(() => {
-        this.getUIContext().getRouter().pushUrl({
-          url: url
-        })
+
+        this.pageInfos.pushPathByName(url, '')
+
       })
     }
     .padding(16)
   }
 
   build() {
-    Column() {
+    NavDestination() {
+
+      Column() {
       ArcList({ initialIndex: 1 }) {
         ArcListItem() {
           Text($r('app.string.app_name'))
@@ -36,8 +45,8 @@ struct Page {
             .fontWeight(FontWeight.Bold)
         }
 
-        this.ListBuilder($r('app.media.add'), 'Add Password', 'pages/AddPage')
-        this.ListBuilder($r('app.media.list'), 'List Passwords', 'pages/ListPage')
+        this.ListBuilder($r('app.media.add'), 'Add Password', 'AddPage')
+        this.ListBuilder($r('app.media.list'), 'List Passwords', 'ListPage')
       }
     }
     .width('100%')
@@ -46,5 +55,12 @@ struct Page {
     .alignItems(HorizontalAlign.Center)
     .justifyContent(FlexAlign.Center)
     .alignSelf(ItemAlign.Center)
+
+  }.width('100%')
+  .height('100%')
+  .hideTitleBar(true)
+  .onReady((context: NavDestinationContext) => {
+  this.pageInfos = context.pathStack;
+})
   }
 }

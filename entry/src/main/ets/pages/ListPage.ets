@@ -8,8 +8,15 @@ import {
   removeAssetPromise
 } from '../model/AssetModel'
 import { convertMapArrayToMapItem, getAuthTokenCallback } from '../utils/Helper';
-import { ArcList, ArcListAttribute, ArcListItem, ArcListItemAttribute, LengthUnit, router } from '@kit.ArkUI';
+import { ArcList, ArcListAttribute, ArcListItem, ArcListItemAttribute, LengthUnit } from '@kit.ArkUI';
 import { AssetItem } from '../model/AssetItem';
+import { BusinessError } from '@kit.BasicServicesKit';
+
+
+@Builder
+export function ListPageBuilder (name: string, param: Object){
+  ListPage()
+}
 
 @Entry
 @Component
@@ -19,6 +26,7 @@ struct ListPage {
   @State challenge: Uint8Array = new Uint8Array;
   @State authToken: Uint8Array = new Uint8Array;
   @State assets: AssetItem[] = [];
+  pageInfos: NavPathStack = new NavPathStack();
 
   async aboutToAppear(): Promise<void> {
     this.initData()
@@ -56,7 +64,9 @@ struct ListPage {
   }
 
   build() {
-    Column() {
+    NavDestination() {
+
+      Column() {
       ArcList({ initialIndex: 1 }) {
         ArcListItem() {
           Text($r('app.string.account_list')).fontSize(18).fontWeight(FontWeight.Bold)
@@ -74,12 +84,17 @@ struct ListPage {
               Text(asset.alias).fontSize(18).fontWeight(FontWeight.Bold)
             }
             .onClick(() => {
-              this.getUIContext().getRouter().pushUrl({
-                url: 'pages/QueryResultPage',
-                params: {
-                  data: asset
+              this.pageInfos.pushDestination({
+                name: 'QueryResultPage', param: asset, onPop: (popInfo: PopInfo) => {
+                  logger.info(`[pushDestination]last page is: ${popInfo.info.name}, result: ${JSON.stringify(popInfo.result)}`);
+
                 }
-              })
+              }).catch((error: BusinessError) => {
+                logger.error(`[pushDestination]failed, error code = ${error.code}, error.message = ${error.message}.`)
+              }).then(() => {
+                logger.error('[pushDestination]success.');
+              });
+
             })
             .padding({ left: 8, right: 8 })
             .borderRadius(20)
@@ -107,5 +122,12 @@ struct ListPage {
     .width('100%')
     .height('100%')
     .backgroundColor($r('app.color.app_background'))
+
+  }.width('100%')
+  .height('100%')
+  .hideTitleBar(true)
+  .onReady((context: NavDestinationContext) => {
+    this.pageInfos = context.pathStack;
+})
   }
 }

@@ -12,15 +12,23 @@ import {
 import { ArcButtonStyleMode } from '@ohos.arkui.advanced.ArcButton';
 import { addAssetPromise } from '../model/AssetModel';
 
+@Builder
+export function AddPageBuilder (){
+  AddPage()
+}
+
 @Entry
 @Component
 struct AddPage {
   @State account: string = '';
   @State password: string = '';
   @State label: string = '';
+  pageInfos: NavPathStack = new NavPathStack();
 
   build() {
-    Column() {
+    NavDestination() {
+
+      Column() {
       ArcList() {
         // Account
         ArcListItem() {
@@ -69,7 +77,6 @@ struct AddPage {
               placeholder: $r('app.string.label2'),
               text: this.label
             }).onChange((text) => {
-              console.log(text)
               this.label = text
             })
           }.width('90%')
@@ -86,7 +93,7 @@ struct AddPage {
             backgroundColor: ColorMetrics.resourceColor('#ff55b1ff'),
             onClick: () => {
               addAssetPromise(this.account, this.password, this.label).then(() => {
-                this.getUIContext().getRouter().back()
+                this.pageInfos.pop()
               })
             }
           })
@@ -105,5 +112,12 @@ struct AddPage {
     .backgroundColor($r('app.color.app_background'))
     .width('100%')
     .height('100%');
+
+  }.width('100%')
+  .height('100%')
+  .hideTitleBar(true)
+  .onReady((context: NavDestinationContext) => {
+  this.pageInfos = context.pathStack;
+})
   }
 }

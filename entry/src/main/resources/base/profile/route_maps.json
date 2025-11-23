@@ -1,0 +1,24 @@
+{
+  "routerMap" : [
+    {
+      "name" : "Page",
+      "pageSourceFile"  : "src/main/ets/pages/Index.ets",
+      "buildFunction" : "PageBuilder"
+    },
+    {
+      "name" : "AddPage",
+      "pageSourceFile"  : "src/main/ets/pages/AddPage.ets",
+      "buildFunction" : "AddPageBuilder"
+    },
+    {
+      "name" : "ListPage",
+      "pageSourceFile"  : "src/main/ets/pages/ListPage.ets",
+      "buildFunction" : "ListPageBuilder"
+    },
+    {
+      "name" : "QueryResultPage",
+      "pageSourceFile"  : "src/main/ets/pages/QueryResultPage.ets",
+      "buildFunction" : "QueryResultPageBuilder"
+    }
+  ]
+}
