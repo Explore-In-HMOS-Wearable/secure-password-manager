@@ -37,7 +37,7 @@ This app demonstrates how to store the secrets on Asset Store.
 
 ## Development Process
 <div>
-<img src="screenshots/process.png" style="border-radius: 20px" />
+<img src="diagrams/process.png" style="border-radius: 20px" />
 </div>
 
 # Directory Structure

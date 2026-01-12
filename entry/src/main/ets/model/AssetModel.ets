@@ -1,12 +1,10 @@
 import { asset } from '@kit.AssetStoreKit';
-import { promptAction } from '@kit.ArkUI';
 import { util } from '@kit.ArkTS';
 import { logger } from '../common/Logger';
-import AbilityDelegatorRegistry from '@ohos.app.ability.abilityDelegatorRegistry';
 import GlobalContext from '../utils/GlobalContex';
 
 function removeDuplicateAndSort(arr: string[]): string[] {
-  let newArr = new Array<string>();
+  let newArr: Array<string> = [];
   for (let i = 0; i < arr.length; i++) {
     if (newArr.indexOf(arr[i]) === -1 && arr[i] !== '') {
       newArr.push(arr[i]);
@@ -16,7 +14,7 @@ function removeDuplicateAndSort(arr: string[]): string[] {
 }
 
 export function log(resource: Resource) {
-  promptAction.showToast({ message: resource })
+  GlobalContext.getInstance().getUIContext()!.getPromptAction().showToast({ message: resource });
   logger.info(GlobalContext.getInstance().getCustomContext()!.resourceManager.getStringSync(resource));
 }
 
@@ -33,7 +31,7 @@ function arrayToString(arr: Uint8Array): string {
   let textDecoder = util.TextDecoder.create('utf-8', {
     ignoreBOM: true
   });
-  let str = textDecoder.decodeWithStream(arr, {
+  let str = textDecoder.decodeToString(arr, {
     stream: false
   })
   return str;
@@ -66,7 +64,7 @@ export async function addAssetPromise(account: string, password: string, label: 
   try {
     await asset.add(attr);
     log($r('app.string.save_success'))
-  } catch (error)  {
+  } catch (error) {
     if (error.code === 24000003) {
       log($r('app.string.save_failed_for_account_exist'));
     } else {
@@ -117,47 +115,56 @@ function compareArray(array1: Uint8Array, array2: Uint8Array): boolean {
   return JSON.stringify(array1) === JSON.stringify(array2);
 }
 
-function addLabelInfo(label: string, tag: asset.Tag, account: asset.AssetMap, emptyArray: Uint8Array): string {
-  if (account.has(tag) && !compareArray(account.get(tag) as Uint8Array, emptyArray)) {
-    label += arrayToString(account.get(tag) as Uint8Array) + ';'
-  }
-  return label;
-}
-
 function addElement(attr: asset.AssetMap, label: string, key: asset.Tag) {
-  if (label){
+  if (label) {
     attr.set(key, stringToArray(label))
   } else {
     attr.set(key, newNullArray())
   }
 }
 
-let normalLabelList: Array<asset.Tag>  = new Array<asset.Tag>(asset.Tag.DATA_LABEL_NORMAL_1,
-  asset.Tag.DATA_LABEL_NORMAL_2, asset.Tag.DATA_LABEL_NORMAL_3, asset.Tag.DATA_LABEL_NORMAL_4);
 
-// Convert the map obtained from the asset to a display map.
 function convertAssetList(assetList: asset.AssetMap[], accountList: Map<string, string>[]): Array<Map<string, string>> {
-  for (let account of assetList) {
+  const normalLabelList: Array<asset.Tag> = [asset.Tag.DATA_LABEL_NORMAL_1,
+    asset.Tag.DATA_LABEL_NORMAL_2, asset.Tag.DATA_LABEL_NORMAL_3, asset.Tag.DATA_LABEL_NORMAL_4];
+
+  for (let a = 0; a < assetList.length; a++) {
+    let account = assetList[a];
+
     let map: Map<string, string> = new Map<string, string>();
     let alias = arrayToString(account.get(asset.Tag.ALIAS) as Uint8Array);
+
     if (account.has(asset.Tag.SECRET)) {
       let secret = arrayToString(account.get(asset.Tag.SECRET) as Uint8Array);
       map.set('secret', secret);
     }
-    let label = ''
-    let emptyArray = newNullArray();
-    for (let currentLabel of normalLabelList) {
-      label = addLabelInfo(label, currentLabel, account, emptyArray);
+
+    let label = '';
+    for (let i = 0; i < normalLabelList.length; i++) {
+      let currentLabel = normalLabelList[i];
+      if (account.has(currentLabel)) {
+        let v = account.get(currentLabel) as Uint8Array;
+        if (!(v.length === 1 && v[0] === 0)) {
+          label += arrayToString(v) + ';';
+        }
+      }
     }
-    label = label.slice(0, label.length - 1)
+
+    if (label.length > 0) {
+      label = label.slice(0, label.length - 1);
+    }
+
     map.set('alias', alias);
-    map.set('label', label)
+    map.set('label', label);
     accountList.push(map);
   }
   return accountList;
 }
 
 export async function updateAssetPromise(reserveAccount: string, reservePassword: string, reserveLabel: string) {
+  const normalLabelList: Array<asset.Tag> = [asset.Tag.DATA_LABEL_NORMAL_1,
+    asset.Tag.DATA_LABEL_NORMAL_2, asset.Tag.DATA_LABEL_NORMAL_3, asset.Tag.DATA_LABEL_NORMAL_4];
+
   let labelList = reserveLabel.split(';');
   labelList = removeDuplicateAndSort(labelList);
   if (labelList.length > 4) {
@@ -167,9 +174,9 @@ export async function updateAssetPromise(reserveAccount: string, reservePassword
 
   let attr: asset.AssetMap = new Map();
   attr.set(asset.Tag.SECRET, stringToArray(reservePassword))
-  normalLabelList.forEach((element: asset.Tag, index: number) => {
-    addElement(attr, labelList[index], element);
-  });
+  for (let i = 0; i < normalLabelList.length; i++) {
+    addElement(attr, labelList[i], normalLabelList[i]);
+  }
 
   let attr2: asset.AssetMap = new Map();
   attr2.set(asset.Tag.ALIAS, stringToArray(reserveAccount))
@@ -182,11 +189,10 @@ export async function updateAssetPromise(reserveAccount: string, reservePassword
   }
 }
 
-async function getFirstQuery(alias: string, label: string): Promise<asset.AssetMap[]>
-{
-  let res: Array<asset.AssetMap> = new Array<asset.AssetMap>();
-  let options: asset.Tag[] = [ asset.Tag.DATA_LABEL_NORMAL_1, asset.Tag.DATA_LABEL_NORMAL_2,
-    asset.Tag.DATA_LABEL_NORMAL_3, asset.Tag.DATA_LABEL_NORMAL_4 ];
+async function getFirstQuery(alias: string, label: string): Promise<asset.AssetMap[]> {
+  let res: Array<asset.AssetMap> = [];
+  let options: asset.Tag[] = [asset.Tag.DATA_LABEL_NORMAL_1, asset.Tag.DATA_LABEL_NORMAL_2,
+    asset.Tag.DATA_LABEL_NORMAL_3, asset.Tag.DATA_LABEL_NORMAL_4];
   for (let i = 0; i < options.length; i++) {
     let map: asset.AssetMap = new Map();
     if (alias.length > 0) {
@@ -196,16 +202,15 @@ async function getFirstQuery(alias: string, label: string): Promise<asset.AssetM
     try {
       let temp: Array<asset.AssetMap> = await asset.query(map)
       res = res.concat(temp);
-    } catch(e) {
+    } catch (e) {
       // skip the error: not found
     }
   }
   return res;
 }
 
-function getLabelList(input: asset.AssetMap): Array<string>
-{
-  let tmp = new Array<string>();
+function getLabelList(input: asset.AssetMap): Array<string> {
+  let tmp: Array<string> = [];
   if (input.has(asset.Tag.DATA_LABEL_NORMAL_1)) {
     tmp.push(arrayToString(input.get(asset.Tag.DATA_LABEL_NORMAL_1) as Uint8Array));
   }
@@ -221,23 +226,33 @@ function getLabelList(input: asset.AssetMap): Array<string>
   return tmp;
 }
 
-async function getArrangedMap(alias: string, labels: string[]): Promise<asset.AssetMap[]>
-{
-  let first_query: asset.AssetMap[] = await getFirstQuery(alias, labels[0]);
-  let res: asset.AssetMap[] = first_query.filter((map: asset.AssetMap) => {
-    let list: Array<string> = getLabelList(map);
+async function getArrangedMap(alias: string, labels: string[]): Promise<asset.AssetMap[]> {
+  let firstQuery: asset.AssetMap[] = await getFirstQuery(alias, labels[0]);
+  let res: asset.AssetMap[] = [];
+
+  for (let k = 0; k < firstQuery.length; k++) {
+    let m = firstQuery[k];
+    let list: Array<string> = getLabelList(m);
+
+    let ok: boolean = true;
     for (let i = 1; i < labels.length; i++) {
       if (list.indexOf(labels[i]) < 0) {
-        return false;
+        ok = false;
+        break;
       }
     }
-    return true;
-  });
+
+    if (ok) {
+      res.push(m);
+    }
+  }
+
   return res;
 }
 
+
 export async function queryAssetPromise(checkAccount: string, checkLabel: string): Promise<Array<Map<string, string>>> {
-  let accountList: Map<string, string>[] = new Array<Map<string, string>>();
+  let accountList: Map<string, string>[] = [];
   let assetMap: asset.AssetMap = new Map();
   if (checkAccount.length > 0) {
     assetMap.set(asset.Tag.ALIAS, stringToArray(checkAccount))
@@ -253,7 +268,7 @@ export async function queryAssetPromise(checkAccount: string, checkLabel: string
       } else {
         log($r('app.string.query_failed'));
       }
-      return new Array<Map<string, string>>();
+      return [];
     }
   } else {
     let labelList: Array<string> = checkLabel.split(';');
@@ -261,7 +276,7 @@ export async function queryAssetPromise(checkAccount: string, checkLabel: string
     let assetList: asset.AssetMap[] = await getArrangedMap(checkAccount, labelList)
     if (assetList.length === 0) {
       log($r('app.string.query_no_result'));
-      return new Array<Map<string, string>>();
+      return [];
     }
     return convertAssetList(assetList, accountList);
   }
@@ -281,7 +296,7 @@ export async function preQueryAssetPromise(checkAccount: string): Promise<Uint8A
   }
 }
 
-export async function queryAuthAssetPromise(checkAccount: string, challenge: Uint8Array, 
+export async function queryAuthAssetPromise(checkAccount: string, challenge: Uint8Array,
   authToken: Uint8Array): Promise<Map<string, string>> {
   let attr: asset.AssetMap = new Map();
   let account: Map<string, string> = new Map<string, string>();
@@ -293,7 +308,7 @@ export async function queryAuthAssetPromise(checkAccount: string, challenge: Uin
   }
   try {
     let data: Array<asset.AssetMap> = await asset.query(attr);
-    let accountList: Map<string, string>[] = new Array<Map<string, string>>();
+    let accountList: Map<string, string>[] = [];
     accountList = convertAssetList(data, accountList);
     return accountList[0]
   } catch (error) {

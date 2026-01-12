@@ -114,29 +114,25 @@ struct QueryResultPage {
 
               if (this.result.secret) {
                 Row() {
-                  Row() {
-                    Text($r('app.string.secret'))
-                      .fontFamily('HarmonyHeiTi')
-                      .fontSize(16)
-                      .fontColor($r('app.color.app_background'))
-                      .lineHeight(22)
-                      .fontWeight(500)
-                      .textAlign(TextAlign.Start)
-                      .padding({ top: '2.3%', bottom: '1.1%' })
-                  }
+                  Text($r('app.string.secret'))
+                    .fontFamily('HarmonyHeiTi')
+                    .fontSize(16)
+                    .fontColor($r('app.color.app_background'))
+                    .lineHeight(22)
+                    .fontWeight(500)
+                    .textAlign(TextAlign.Start)
+                    .padding({ top: '2.3%', bottom: '1.1%' })
 
                   Blank()
-                  Row() {
-                    Text(this.result.secret)
-                      .opacity(0.6)
-                      .fontFamily('HarmonyHeiTi')
-                      .fontSize(16)
-                      .fontColor(0x182431)
-                      .lineHeight(19)
-                      .fontWeight(400)
-                      .textAlign(TextAlign.End)
-                      .padding({ top: '2.3%', bottom: '1.1%' })
-                  }
+                  Text(this.result.secret)
+                    .opacity(0.6)
+                    .fontFamily('HarmonyHeiTi')
+                    .fontSize(16)
+                    .fontColor(0x182431)
+                    .lineHeight(19)
+                    .fontWeight(400)
+                    .textAlign(TextAlign.End)
+                    .padding({ top: '2.3%', bottom: '1.1%' })
                 }.width('86.7%').height('15%')
               }
               Line()
@@ -149,31 +145,27 @@ struct QueryResultPage {
                 .backgroundColor('#0D182431')
 
               Row() {
-                Row() {
-                  Text($r('app.string.label2'))
-                    .fontFamily('HarmonyHeiTi')
-                    .fontSize(16)
-                    .fontColor($r('app.color.app_background'))
-                    .lineHeight(22)
-                    .fontWeight(500)
-                    .baselineOffset(0)
-                    .textAlign(TextAlign.Start)
-                    .padding({ top: '2.3%', bottom: '1.1%' })
-                }
+                Text($r('app.string.label2'))
+                  .fontFamily('HarmonyHeiTi')
+                  .fontSize(16)
+                  .fontColor($r('app.color.app_background'))
+                  .lineHeight(22)
+                  .fontWeight(500)
+                  .baselineOffset(0)
+                  .textAlign(TextAlign.Start)
+                  .padding({ top: '2.3%', bottom: '1.1%' })
 
                 Blank()
-                Row() {
-                  Text(this.data.dataLabel)
-                    .opacity(0.6)
-                    .fontFamily('HarmonyHeiTi')
-                    .fontSize(16)
-                    .fontColor(0x182431)
-                    .lineHeight(19)
-                    .fontWeight(400)
-                    .baselineOffset(0)
-                    .textAlign(TextAlign.End)
-                    .padding({ top: '2.3%', bottom: '1.1%' })
-                }
+                Text(this.data.dataLabel)
+                  .opacity(0.6)
+                  .fontFamily('HarmonyHeiTi')
+                  .fontSize(16)
+                  .fontColor(0x182431)
+                  .lineHeight(19)
+                  .fontWeight(400)
+                  .baselineOffset(0)
+                  .textAlign(TextAlign.End)
+                  .padding({ top: '2.3%', bottom: '1.1%' })
               }
 
               .width('86.7%').height('15%')

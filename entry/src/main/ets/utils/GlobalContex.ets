@@ -1,6 +1,7 @@
 export default class GlobalContext {
   private static instance: GlobalContext;
-  private uiContext?: Context;
+  private uiContext?: UIContext;
+  private context?: Context;
 
   static getInstance() {
     if (!GlobalContext.instance) {
@@ -10,10 +11,18 @@ export default class GlobalContext {
   }
 
   public saveContext(context: Context) {
-    this.uiContext = context;
+    this.context = context;
   }
 
   public getCustomContext() {
+    return this.context;
+  }
+
+  public saveUIContext(context: UIContext) {
+    this.uiContext = context;
+  }
+
+  public getUIContext() {
     return this.uiContext;
   }
 }

@@ -26,9 +26,13 @@ export default class EntryAbility extends UIAbility {
       }
       hilog.info(DOMAIN, 'testTag', 'Succeeded in loading the content.');
 
-      let context: Context | undefined = windowStage.getMainWindowSync().getUIContext().getHostContext();
+      let context: UIContext | undefined = windowStage.getMainWindowSync().getUIContext();
       if (context) {
-        GlobalContext.getInstance().saveContext(context)
+        GlobalContext.getInstance().saveUIContext(context)
+      }
+      let hostContext = context.getHostContext();
+      if (hostContext) {
+        GlobalContext.getInstance().saveContext(hostContext)
       }
     });
   }

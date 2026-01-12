@@ -11,7 +11,7 @@ import { convertMapArrayToMapItem, getAuthTokenCallback } from '../utils/Helper'
 import { ArcList, ArcListAttribute, ArcListItem, ArcListItemAttribute, LengthUnit } from '@kit.ArkUI';
 import { AssetItem } from '../model/AssetItem';
 import { BusinessError } from '@kit.BasicServicesKit';
-
+import GlobalContext from '../utils/GlobalContex';
 
 @Builder
 export function ListPageBuilder (name: string, param: Object){
@@ -21,10 +21,8 @@ export function ListPageBuilder (name: string, param: Object){
 @Entry
 @Component
 struct ListPage {
-  @State account: string = '';
-  @State label: string = '';
-  @State challenge: Uint8Array = new Uint8Array;
-  @State authToken: Uint8Array = new Uint8Array;
+  private account: string = '';
+  private label: string = '';
   @State assets: AssetItem[] = [];
   pageInfos: NavPathStack = new NavPathStack();
 
@@ -50,11 +48,11 @@ struct ListPage {
     }
     .margin({ left: 8 })
     .onClick(() => {
-      animateTo({
+      GlobalContext.getInstance().getUIContext()!.animateTo({
         duration: 1000,
         curve: Curve.Smooth,
         iterations: 1,
-        playMode: PlayMode.Normal,
+        playMode: PlayMode.Normal
       }, () => {
         removeAssetPromise(item.alias, item.dataLabel).then(() => {
           this.initData()
@@ -110,7 +108,7 @@ struct ListPage {
             }
           })
 
-        })
+        }, (item: AssetItem, index: number) => item.dataLabel)
       }
       .padding({ right: 16, left: 16 })
       .space({
